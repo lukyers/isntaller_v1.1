@@ -61,7 +61,7 @@ begin
 			bDone = TRUE;
 			
 		case B_BACK:
-			nRerutn = 1;
+			nRerutn = 12;
 			bDone = TRUE;
 			
 		case DLG_CLOSE || B_CANCEL:              
@@ -75,6 +75,9 @@ begin
 		
 		endswitch;
 	endwhile;
+	
+	EndDialog(DLG_CONFIG1);
+	ReleaseDialog(DLG_CONFIG1);
 	return nRerutn;
 end;
 
@@ -89,7 +92,7 @@ begin
 	lzIronPy = ListCreate(STRINGLIST);
 	ListAddString(lzIronPy, "IronPython-2.7.5-32bit.msi", AFTER);
 	lzRobot = ListCreate(STRINGLIST);
-	ListAddString(lzRobot, "python-2.7.10-32bit.msi", AFTER);
+	ListAddString(lzRobot, "robotframework-2.9a3", AFTER);
 	lzElem = ListCreate(STRINGLIST);
 	ListAddString(lzElem, "elementtree-1.2.7-20070827-preview", AFTER);
 	lzPy = ListCreate(STRINGLIST);
@@ -136,7 +139,7 @@ begin
 			bDone = TRUE;
 			
 		case B_BACK:
-			nRerutn = 1;
+			nRerutn = 12;
 			bDone = TRUE;
 			
 		case DLG_CLOSE || B_CANCEL:              
@@ -150,6 +153,9 @@ begin
 		
 		endswitch;
 	endwhile;
+	
+	EndDialog(DLG_CONFIG2);
+	ReleaseDialog(DLG_CONFIG2);
 	return nRerutn;
 end;
 
@@ -183,7 +189,7 @@ begin
 			bDone = TRUE;
 			
 		case B_BACK:
-			nRerutn = 1;
+			nRerutn = 12;
 			bDone = TRUE;
 			
 		case DLG_CLOSE || B_CANCEL:              
@@ -197,6 +203,9 @@ begin
 		
 		endswitch;
 	endwhile;
+	
+	EndDialog(DLG_CONFIG3);
+	ReleaseDialog(DLG_CONFIG3);
 	return nRerutn;
 end;
 

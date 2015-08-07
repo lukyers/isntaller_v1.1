@@ -9,7 +9,6 @@
 //				  Project Assistant.
 //
 //===========================================================================
-
 STRING svHost, svRepo, svUser, svPsw;
 STRING svIron, svRobot, svEle, svPy, svPyPip, svWxPy;
 LIST lvPackage;
@@ -92,7 +91,7 @@ Dlg_SdWelcome:
 Dlg_SdConfig1:
 	nResult = GetServerConfig(svHost, svRepo, svUser, svPsw);
 	if (nResult = BACK) then
-		goto Dlg_SdConfig1;
+		goto Dlg_SdWelcome;
 	endif;
 	
 Dlg_SdConfig2:
@@ -107,11 +106,10 @@ Dlg_SdConfig3:
 	if (nResult = BACK) then
 		goto Dlg_SdConfig2;
 	endif;
+	//MessageBox("c:\\logo.ps1", INFORMATION);
 	
-	pServ = &tdServ;
-	pInsta = &tdInsta;
-	
-	SetConfig(pServ, pInsta, package);
+	//LaunchApp(WINSYSDIR64^"WindowsPowerShell\\v1.0\\", " & powershell -ExecutionPolicy Unrestricted -NoExit -NoProfile" + "c:\\logo.ps1");
+	//LaunchApp(WINSYSDIR64^"cmd.exe", " & powershell -ExecutionPolicy ByPass -File" + "C:\\logo.ps1");
 	
 Dlg_SdAskDestPath:    	
     nResult = SdAskDestPath(szTitle, szMsg, INSTALLDIR, 0);
@@ -133,7 +131,7 @@ Dlg_SdStartCopy:
 
     // setup default status
     Enable(STATUSEX);
- 
+
     return 0;
 end;
 
@@ -146,24 +144,31 @@ end;
 // completed successfully.
 //---------------------------------------------------------------------------
 function OnFirstUIAfter()
-    STRING szTitle, szMsg1, szMsg2, szOpt1, szOpt2;
+    STRING szTitle, szMsg1, szMsg2, szOpt1, szOpt2, szOption1, szOption2;
     NUMBER bOpt1, bOpt2;
     LIST package;
 begin
-	Disable(STATUSEX);
+	pServ = &tdServ;
+	pInsta = &tdInsta;
+	
+	SetConfig(pServ, pInsta, package);
 
-	bOpt1   = FALSE;
-    bOpt2   = FALSE;
+	Disable(STATUSEX);
 	
-	//pServ = &tdServ;
-	//pInsta = &tdInsta;
-	
-	//SetConfig(pServ, pInsta, package);
+	bOpt1   = TRUE;
+    bOpt2   = TRUE;
+	szMsg1 = SdLoadString(IFX_SDFINISH_MSG1);
+	szOption1="Launch Installer";
+	szOption2="";
+	SdFinishEx(szTitle, szMsg1, szMsg2, szOption1, szOption2, bOpt1, bOpt2);
+	if (bOpt1 = TRUE) then
+		//MessageBox(INSTALLDIR^"logo.ps1", INFORMATION);
+		//LaunchApp(WINSYSDIR64^"cmd.exe", " & powershell -ExecutionPolicy ByPass -File" + INSTALLDIR^"logo.ps1");
+		LaunchApp(INSTALLDIR^"Install.cmd", "");
+	endif;
 
     if ( BATCH_INSTALL ) then
     	SdFinishReboot ( szTitle , szMsg1 , SYS_BOOTMACHINE , szMsg2 , 0 );
-    else
-	    SdFinish ( szTitle , szMsg1 , szMsg2 , szOpt1 , szOpt2 , bOpt1 , bOpt2 );
 	endif;
 end;
 /*
@@ -180,7 +185,8 @@ end;
 */
 function SetConfig(Host, Install, Package)
 	NUMBER count, iCount, nvReturnLineNum;
-	STRING sRet, N_File, svReturnLine;
+	STRING N_File, svReturnLine;
+	STRING checkbox1, checkbox2, checkbox3;
 begin
 	Host->svHost = svHost;
 	Host->svRepo = svRepo;
@@ -194,26 +200,39 @@ begin
 	Install->svPyPip = svPyPip;
 	Install->svWxPy = svWxPy;
 	
-	ListGetFirstString(lvPackage, sRet);
-	ListGetNextString(lvPackage, sRet);
-	ListGetNextString(lvPackage, sRet);
+	ListGetFirstString(lvPackage, checkbox1);
+	ListGetNextString(lvPackage, checkbox2);
+	ListGetNextString(lvPackage, checkbox3);
 	
-    N_File = "c:\\install.ps1";
+    N_File = INSTALLDIR^"install.ps1";
     
 	FileGrep(N_File, "$RemoteHost", svReturnLine, nvReturnLineNum, 0);
 	FileInsertLine(N_File, "$RemoteHost = " + '"' + Host->svHost + '"', nvReturnLineNum, REPLACE);
-	
 	FileGrep(N_File, "$RemoteSoftwareRepo", svReturnLine, nvReturnLineNum, 0);
-	FileInsertLine(N_File, "$RemoteSoftwareRepo = " + '"\\\\' + Host->svRepo + '"', nvReturnLineNum, REPLACE);
-
+	FileInsertLine(N_File, "$RemoteSoftwareRepo = " + '"' + Host->svRepo + '"', nvReturnLineNum, REPLACE);
 	FileGrep(N_File, "$username", svReturnLine, nvReturnLineNum, 0);
-	FileInsertLine(N_File, "$username = " + '"' + Host->svUser + '"', nvReturnLineNum, REPLACE);
-	
+	FileInsertLine(N_File, "$username = " + '"' + Host->svUser + '"', nvReturnLineNum, REPLACE);	
 	FileGrep(N_File, "$password", svReturnLine, nvReturnLineNum, 0);
     FileInsertLine(N_File, "$password = " + '"' + Host->svPsw + '"', nvReturnLineNum, REPLACE);	
 	
+	FileGrep(N_File, "$FileIpy", svReturnLine, nvReturnLineNum, 0);
+    FileInsertLine(N_File, "$FileIpy = " + '"' + Install->svIron + '"', nvReturnLineNum, REPLACE);	
+    FileGrep(N_File, "$FolderIpybot", svReturnLine, nvReturnLineNum, 0);
+    FileInsertLine(N_File, "$FolderIpybot = " + '"' + Install->svRobot + '"', nvReturnLineNum, REPLACE);	
+	FileGrep(N_File, "$FolderElementTree", svReturnLine, nvReturnLineNum, 0);
+    FileInsertLine(N_File, "$FolderElementTree = " + '"' + Install->svEle + '"', nvReturnLineNum, REPLACE);	
+    FileGrep(N_File, "$FilePython", svReturnLine, nvReturnLineNum, 0);
+    FileInsertLine(N_File, "$FilePython = " + '"' + Install->svPy + '"', nvReturnLineNum, REPLACE);	
+    FileGrep(N_File, "$FilePythonPip", svReturnLine, nvReturnLineNum, 0);
+    FileInsertLine(N_File, "$FilePythonPip = " + '"' + Install->svPyPip + '"', nvReturnLineNum, REPLACE);	
+    FileGrep(N_File, "$FileWxPython", svReturnLine, nvReturnLineNum, 0);
+    FileInsertLine(N_File, "$FileWxPython = " + '"' + Install->svWxPy + '"', nvReturnLineNum, REPLACE);	
 	
-	
+	FileGrep(N_File, "$PythonPipPackages", svReturnLine, nvReturnLineNum, 0);
+    FileInsertLine(N_File, '"' + checkbox1  + '"' + ',', nvReturnLineNum + 1, REPLACE);	
+    FileInsertLine(N_File, '"' + checkbox2  + '"' + ',', nvReturnLineNum + 2, REPLACE);	
+    FileInsertLine(N_File, '"' + checkbox3  + '"', nvReturnLineNum + 3, REPLACE);
+    
 	/*
 	Package = ListCreate(STRINGLIST);
 	count = ListCount(lvPackage);
