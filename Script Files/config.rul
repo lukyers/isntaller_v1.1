@@ -1,0 +1,215 @@
+#define DLG_CONFIG1 "SdConfig1"
+#define DLG_CONFIG2 "SdConfig2"
+#define DLG_CONFIG3 "SdConfig3"
+#define DLG_CONFIG1_ID 1
+#define DLG_CONFIG2_ID 2
+#define DLG_CONFIG3_ID 3
+
+#define REMOTEHOST 1301
+#define REMOTESOFTREPO 1302
+#define USERNAME 1303
+#define PASSWORD 1304
+
+#define IRONPYTHON 1306
+#define ROBOTFRAM 1307
+#define ELEMTREE 1308
+#define PYTHON 1309
+#define PYTHONPIP 1310
+#define WXPYTHON 1311
+
+#define ROBOTFW 1305
+#define ROBOTFW_S2L 1306
+#define ROBOTFW_RIDE 1307
+
+#define B_BACK 12
+#define B_NEXT 1
+#define B_CANCEL 9
+
+prototype NUMBER GetServerConfig(BYREF STRING, BYREF STRING, BYREF STRING, BYREF STRING);
+prototype NUMBER GetInstallConfig(BYREF STRING, BYREF STRING, BYREF STRING, BYREF STRING, BYREF STRING, BYREF STRING);
+prototype NUMBER GetPackageConfig(BYREF LIST);
+
+function NUMBER GetServerConfig(svHost, svRepo, svUser, svPsw)
+	HWND hDlg;
+	NUMBER nId, nRerutn;
+	BOOL bDone;
+	STRING dfHost, dfRepo, dfUser, dfPsw;
+	
+begin
+	bDone = FALSE;
+	dfHost = "10.102.6.183";
+	dfRepo = '\\\\' + dfHost + "\\Softwares";
+	dfUser = "Administrator";
+	dfPsw = "Password123!";
+	
+	EzDefineDialog(DLG_CONFIG1, ISUSER, "", DLG_CONFIG1_ID);
+	while(!bDone)
+		nId = WaitOnDialog(DLG_CONFIG1);
+		switch(nId)
+		case DLG_INIT:
+			CtrlSetText(DLG_CONFIG1, REMOTEHOST, dfHost);
+			CtrlSetText(DLG_CONFIG1, REMOTESOFTREPO, dfRepo);
+			CtrlSetText(DLG_CONFIG1, USERNAME, dfUser);
+			CtrlSetText(DLG_CONFIG1, PASSWORD, dfPsw);
+		
+		case B_NEXT:
+			CtrlGetText(DLG_CONFIG1, REMOTEHOST, svHost);
+			CtrlGetText(DLG_CONFIG1, REMOTESOFTREPO, svRepo);
+			CtrlGetText(DLG_CONFIG1, USERNAME, svUser);
+			CtrlGetText(DLG_CONFIG1, PASSWORD, svPsw);
+			nRerutn = 1;
+			bDone = TRUE;
+			
+		case B_BACK:
+			nRerutn = 1;
+			bDone = TRUE;
+			
+		case DLG_CLOSE || B_CANCEL:              
+            SdCloseDlg(hDlg, nId, bDone);   
+
+        default:
+            // check standard handling
+            if (SdIsStdButton(nId) && SdDoStdButton(nId)) then
+                bDone = TRUE;
+            endif;
+		
+		endswitch;
+	endwhile;
+	return nRerutn;
+end;
+
+function NUMBER GetInstallConfig(svIron, svRobot, svEle, svPy, svPyPip, svWxPy)
+	HWND hDlg;
+	NUMBER nId, nRerutn;
+	BOOL bDone;
+	STRING dfIronPy, dfRobot, dfElem, dfPy, dfPyPip, dfWxPy;
+	LIST lzIronPy, lzRobot, lzElem, lzPy, lzPyPip, lzWxPy;
+begin
+	bDone = FALSE;
+	lzIronPy = ListCreate(STRINGLIST);
+	ListAddString(lzIronPy, "IronPython-2.7.5-32bit.msi", AFTER);
+	lzRobot = ListCreate(STRINGLIST);
+	ListAddString(lzRobot, "python-2.7.10-32bit.msi", AFTER);
+	lzElem = ListCreate(STRINGLIST);
+	ListAddString(lzElem, "elementtree-1.2.7-20070827-preview", AFTER);
+	lzPy = ListCreate(STRINGLIST);
+	ListAddString(lzPy, "python-2.7.10-32bit.msi", AFTER);
+	lzPyPip = ListCreate(STRINGLIST);
+	ListAddString(lzPyPip, "get-pip.py", AFTER);
+	lzWxPy = ListCreate(STRINGLIST);
+	ListAddString(lzWxPy, "wxpython2.8-win32-unicode-2.8.12.1-py27.msi", AFTER);
+	
+	ListGetFirstString(lzIronPy, dfIronPy);
+	ListGetFirstString(lzRobot, dfRobot);
+	ListGetFirstString(lzElem, dfElem);
+	ListGetFirstString(lzPy, dfPy);
+	ListGetFirstString(lzPyPip, dfPyPip);
+	ListGetFirstString(lzWxPy, dfWxPy);
+	
+	EzDefineDialog(DLG_CONFIG2, ISUSER, "", DLG_CONFIG2_ID);
+	while(!bDone)
+		nId = WaitOnDialog(DLG_CONFIG2);
+		switch(nId)
+		case DLG_INIT:
+			CtrlSetList(DLG_CONFIG2, IRONPYTHON, lzIronPy);	
+			CtrlSetList(DLG_CONFIG2, ROBOTFRAM, lzRobot);
+			CtrlSetList(DLG_CONFIG2, ELEMTREE, lzElem);
+			CtrlSetList(DLG_CONFIG2, PYTHON, lzPy);
+			CtrlSetList(DLG_CONFIG2, PYTHONPIP, lzPyPip);
+			CtrlSetList(DLG_CONFIG2, WXPYTHON, lzWxPy);
+
+			CtrlSetCurSel(DLG_CONFIG2, IRONPYTHON, dfIronPy);
+			CtrlSetCurSel(DLG_CONFIG2, ROBOTFRAM, dfRobot);
+			CtrlSetCurSel(DLG_CONFIG2, ELEMTREE, dfElem);
+			CtrlSetCurSel(DLG_CONFIG2, PYTHON, dfPy);
+			CtrlSetCurSel(DLG_CONFIG2, PYTHONPIP, dfPyPip);
+			CtrlSetCurSel(DLG_CONFIG2, WXPYTHON, dfWxPy);
+
+		case B_NEXT:
+			CtrlGetText(DLG_CONFIG2, IRONPYTHON, svIron);
+			CtrlGetText(DLG_CONFIG2, ROBOTFRAM, svRobot);
+			CtrlGetText(DLG_CONFIG2, ELEMTREE, svEle);
+			CtrlGetText(DLG_CONFIG2, PYTHON, svPy);
+			CtrlGetText(DLG_CONFIG2, PYTHONPIP, svPyPip);
+			CtrlGetText(DLG_CONFIG2, WXPYTHON, svWxPy);
+			nRerutn = 1;
+			bDone = TRUE;
+			
+		case B_BACK:
+			nRerutn = 1;
+			bDone = TRUE;
+			
+		case DLG_CLOSE || B_CANCEL:              
+            SdCloseDlg(hDlg, nId, bDone);   
+
+        default:
+            // check standard handling
+            if (SdIsStdButton(nId) && SdDoStdButton(nId)) then
+                bDone = TRUE;
+            endif;
+		
+		endswitch;
+	endwhile;
+	return nRerutn;
+end;
+
+function NUMBER GetPackageConfig(lvPackage)
+	HWND hDlg;
+	NUMBER nId, nRerutn, nResult;
+	BOOL bDone;
+	STRING check1, check2, check3;
+begin
+	bDone = FALSE;
+	check1 = "robotframework";
+	check2 = "robotframework-selenium2library";
+	check3 = "robotframework-ride";
+	
+	lvPackage = ListCreate(STRINGLIST);
+	EzDefineDialog(DLG_CONFIG3, ISUSER, "", DLG_CONFIG3_ID);
+	while(!bDone)
+		nId = WaitOnDialog(DLG_CONFIG3);
+		switch(nId)
+		case B_NEXT:
+			if (CtrlGetState(DLG_CONFIG3, ROBOTFW) = BUTTON_CHECKED) then
+				ListAddString(lvPackage, check1, AFTER);
+			endif;
+			if (CtrlGetState(DLG_CONFIG3, ROBOTFW_S2L) = BUTTON_CHECKED) then
+				ListAddString(lvPackage, check2, AFTER);
+			endif;
+			if (CtrlGetState(DLG_CONFIG3, ROBOTFW_S2L) = BUTTON_CHECKED) then
+				ListAddString(lvPackage, check3, AFTER);
+			endif;
+			nRerutn = 1;
+			bDone = TRUE;
+			
+		case B_BACK:
+			nRerutn = 1;
+			bDone = TRUE;
+			
+		case DLG_CLOSE || B_CANCEL:              
+            SdCloseDlg(hDlg, nId, bDone);   
+
+        default:
+            // check standard handling
+            if (SdIsStdButton(nId) && SdDoStdButton(nId)) then
+                bDone = TRUE;
+            endif;
+		
+		endswitch;
+	endwhile;
+	return nRerutn;
+end;
+
+
+/*
+    N_File = INSTALLDIR^"install.ps1";
+    
+	FileGrep(N_File, "$RemoteHost", svReturnLine, nvReturnLineNum, 0);
+	FileInsertLine(N_File, "$RemoteHost = " + '"' + szIP + '"', nvReturnLineNum, REPLACE);
+
+	FileGrep(N_File, "$username", svReturnLine, nvReturnLineNum, 0);
+	FileInsertLine(N_File, "$username = " + '"' + szName + '"', nvReturnLineNum, REPLACE);
+	
+	FileGrep(N_File, "$password", svReturnLine, nvReturnLineNum, 0);
+    FileInsertLine(N_File, "$password = " + '"' + szPsw + '"', nvReturnLineNum, REPLACE);
+*/

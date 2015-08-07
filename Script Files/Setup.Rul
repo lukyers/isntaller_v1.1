@@ -1,0 +1,231 @@
+//===========================================================================
+//
+//  File Name:    Setup.rul
+//
+//  Description:  Blank setup main script file
+//
+//  Comments:     Blank setup is an empty setup project. If you want to
+//				  create a new project via. step-by step instructions use the
+//				  Project Assistant.
+//
+//===========================================================================
+
+STRING svHost, svRepo, svUser, svPsw;
+STRING svIron, svRobot, svEle, svPy, svPyPip, svWxPy;
+LIST lvPackage;
+
+typedef SERVCFG
+begin
+	STRING svHost[20];
+	STRING svRepo[50];
+	STRING svUser[20];
+	STRING svPsw[20];
+end;
+
+SERVCFG tdServ;
+SERVCFG POINTER pServ;
+
+typedef INSTALLCFG
+begin
+	STRING svIron[60];
+	STRING svRobot[60];
+	STRING svEle[60];
+	STRING svPy[60];
+	STRING svPyPip[60];
+	STRING svWxPy[60];
+end;
+
+INSTALLCFG tdInsta;
+INSTALLCFG POINTER pInsta;
+
+// Included header files ----------------------------------------------------
+#include "ifx.h"
+#include "config.rul"
+// Note: In order to have your InstallScript function executed as a custom
+// action by the Windows Installer, it must be prototyped as an 
+// entry-point function.
+
+// The keyword export identifies MyFunction() as an entry-point function.
+// The argument it accepts must be a handle to the Installer database.
+    
+/* export prototype MyFunction(HWND); */
+prototype SetConfig(SERVCFG POINTER, INSTALLCFG POINTER, BYREF LIST);
+//---------------------------------------------------------------------------
+// OnFirstUIBefore
+//
+// The OnFirstUIBefore event is called by the framework when the setup is
+// running in first install mode. By default this event displays UI allowing
+// the end user to specify installation parameters.
+//---------------------------------------------------------------------------
+function OnFirstUIBefore()
+    NUMBER nResult, nSetupType, nvSize, nUser;
+    STRING szTitle, szMsg, szQuestion, svName, svCompany, szFile;
+    STRING szLicenseFile;
+	BOOL bCustom, bIgnore1, bIgnore2;
+	LIST package;
+begin	
+    // TO DO: if you want to enable background, window title, and caption bar title                                                                   
+    // SetTitle( @PRODUCT_NAME, 24, WHITE );                                        
+    // SetTitle( @PRODUCT_NAME, 0, BACKGROUNDCAPTION ); 	                  
+    // Enable( FULLWINDOWMODE );						   
+    // Enable( BACKGROUND );							  
+    // SetColor(BACKGROUND,RGB (0, 128, 128));					   
+
+    // Added in InstallShield 15 - Show an appropriate error message if
+    // -removeonly is specified and the product is not installed.
+    if( REMOVEONLY ) then
+        Disable( DIALOGCACHE );
+		szMsg = SdLoadString( IDS_IFX_ERROR_PRODUCT_NOT_INSTALLED_UNINST );
+   		SdSubstituteProductInfo( szMsg );
+		MessageBox( szMsg, SEVERE );
+		abort;
+    endif;
+    
+	nSetupType = TYPICAL;	
+
+Dlg_SdWelcome:
+    szTitle = "";
+    szMsg   = "";
+    nResult = SdWelcome(szTitle, szMsg);
+    if (nResult = BACK) goto Dlg_SdWelcome;
+
+Dlg_SdConfig1:
+	nResult = GetServerConfig(svHost, svRepo, svUser, svPsw);
+	if (nResult = BACK) then
+		goto Dlg_SdConfig1;
+	endif;
+	
+Dlg_SdConfig2:
+	nResult = GetInstallConfig(svIron, svRobot, svEle, svPy, svPyPip, svWxPy);
+	if (nResult = BACK) then
+		goto Dlg_SdConfig1;
+	endif;
+	
+Dlg_SdConfig3:
+	lvPackage = ListCreate(STRINGLIST);
+	nResult = GetPackageConfig(lvPackage);
+	if (nResult = BACK) then
+		goto Dlg_SdConfig2;
+	endif;
+	
+	pServ = &tdServ;
+	pInsta = &tdInsta;
+	
+	SetConfig(pServ, pInsta, package);
+	
+Dlg_SdAskDestPath:    	
+    nResult = SdAskDestPath(szTitle, szMsg, INSTALLDIR, 0);
+    if (nResult = BACK) then
+		goto Dlg_SdConfig3;
+	endif;
+	
+Dlg_SdStartCopy:
+    szTitle = "";
+    szMsg   = "";
+    nResult = SdStartCopy2( szTitle, szMsg );			
+	
+    if (nResult = BACK) then
+       goto Dlg_SdAskDestPath;
+    endif;
+
+    // Added in IS 2009 - Set appropriate StatusEx static text.
+    SetStatusExStaticText( SdLoadString( IDS_IFX_STATUSEX_STATICTEXT_FIRSTUI ) );
+
+    // setup default status
+    Enable(STATUSEX);
+ 
+    return 0;
+end;
+
+//---------------------------------------------------------------------------
+// OnFirstUIAfter
+//
+// The OnFirstUIAfter event called by the framework after the file transfer
+// of the setup when the setup is running in first install mode. By default
+// this event displays UI that informs the end user that the setup has been
+// completed successfully.
+//---------------------------------------------------------------------------
+function OnFirstUIAfter()
+    STRING szTitle, szMsg1, szMsg2, szOpt1, szOpt2;
+    NUMBER bOpt1, bOpt2;
+    LIST package;
+begin
+	Disable(STATUSEX);
+
+	bOpt1   = FALSE;
+    bOpt2   = FALSE;
+	
+	//pServ = &tdServ;
+	//pInsta = &tdInsta;
+	
+	//SetConfig(pServ, pInsta, package);
+
+    if ( BATCH_INSTALL ) then
+    	SdFinishReboot ( szTitle , szMsg1 , SYS_BOOTMACHINE , szMsg2 , 0 );
+    else
+	    SdFinish ( szTitle , szMsg1 , szMsg2 , szOpt1 , szOpt2 , bOpt1 , bOpt2 );
+	endif;
+end;
+/*
+    N_File = INSTALLDIR^"install.ps1";
+    
+	FileGrep(N_File, "$RemoteHost", svReturnLine, nvReturnLineNum, 0);
+	FileInsertLine(N_File, "$RemoteHost = " + '"' + szIP + '"', nvReturnLineNum, REPLACE);
+
+	FileGrep(N_File, "$username", svReturnLine, nvReturnLineNum, 0);
+	FileInsertLine(N_File, "$username = " + '"' + szName + '"', nvReturnLineNum, REPLACE);
+	
+	FileGrep(N_File, "$password", svReturnLine, nvReturnLineNum, 0);
+    FileInsertLine(N_File, "$password = " + '"' + szPsw + '"', nvReturnLineNum, REPLACE);
+*/
+function SetConfig(Host, Install, Package)
+	NUMBER count, iCount, nvReturnLineNum;
+	STRING sRet, N_File, svReturnLine;
+begin
+	Host->svHost = svHost;
+	Host->svRepo = svRepo;
+	Host->svUser = svUser;
+	Host->svPsw = svPsw;
+	
+	Install->svIron = svIron;
+	Install->svRobot = svRobot;
+	Install->svEle = svEle;
+	Install->svPy = svPy;
+	Install->svPyPip = svPyPip;
+	Install->svWxPy = svWxPy;
+	
+	ListGetFirstString(lvPackage, sRet);
+	ListGetNextString(lvPackage, sRet);
+	ListGetNextString(lvPackage, sRet);
+	
+    N_File = "c:\\install.ps1";
+    
+	FileGrep(N_File, "$RemoteHost", svReturnLine, nvReturnLineNum, 0);
+	FileInsertLine(N_File, "$RemoteHost = " + '"' + Host->svHost + '"', nvReturnLineNum, REPLACE);
+	
+	FileGrep(N_File, "$RemoteSoftwareRepo", svReturnLine, nvReturnLineNum, 0);
+	FileInsertLine(N_File, "$RemoteSoftwareRepo = " + '"\\\\' + Host->svRepo + '"', nvReturnLineNum, REPLACE);
+
+	FileGrep(N_File, "$username", svReturnLine, nvReturnLineNum, 0);
+	FileInsertLine(N_File, "$username = " + '"' + Host->svUser + '"', nvReturnLineNum, REPLACE);
+	
+	FileGrep(N_File, "$password", svReturnLine, nvReturnLineNum, 0);
+    FileInsertLine(N_File, "$password = " + '"' + Host->svPsw + '"', nvReturnLineNum, REPLACE);	
+	
+	
+	
+	/*
+	Package = ListCreate(STRINGLIST);
+	count = ListCount(lvPackage);
+	for iCount = 1 to count
+		ListGetNextString(lvPackage, sRet);
+		ListAddString(Package, sRet, AFTER);
+	endfor;
+	
+	count = ListCount(Package);
+	for iCount = 1 to count
+		ListGetNextString(Package, sRet);
+		MessageBox(sRet, INFORMATION);
+	endfor;
+	*/
+end;
