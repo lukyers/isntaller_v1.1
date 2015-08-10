@@ -121,7 +121,6 @@ Dlg_SdStartCopy:
     szTitle = "";
     szMsg   = "";
     nResult = SdStartCopy2( szTitle, szMsg );			
-	
     if (nResult = BACK) then
        goto Dlg_SdAskDestPath;
     endif;
@@ -152,8 +151,20 @@ begin
 	pInsta = &tdInsta;
 	
 	SetConfig(pServ, pInsta, package);
+	
+		Disable(STATUSEX);
 
-	Disable(STATUSEX);
+	bOpt1   = FALSE;
+    bOpt2   = FALSE;    
+
+    if ( BATCH_INSTALL ) then
+    	SdFinishReboot ( szTitle , szMsg1 , SYS_BOOTMACHINE , szMsg2 , 0 );
+    else
+	    SdFinish ( szTitle , szMsg1 , szMsg2 , szOpt1 , szOpt2 , bOpt1 , bOpt2 );
+	endif;
+end;
+
+/*	Disable(STATUSEX);
 	
 	bOpt1   = TRUE;
     bOpt2   = TRUE;
@@ -164,13 +175,14 @@ begin
 	if (bOpt1 = TRUE) then
 		//MessageBox(INSTALLDIR^"logo.ps1", INFORMATION);
 		//LaunchApp(WINSYSDIR64^"cmd.exe", " & powershell -ExecutionPolicy ByPass -File" + INSTALLDIR^"logo.ps1");
+		LAAW_SHELLEXECUTEVERB = "runas";
 		LaunchApp(INSTALLDIR^"Install.cmd", "");
 	endif;
 
     if ( BATCH_INSTALL ) then
     	SdFinishReboot ( szTitle , szMsg1 , SYS_BOOTMACHINE , szMsg2 , 0 );
 	endif;
-end;
+end;*/
 /*
     N_File = INSTALLDIR^"install.ps1";
     
