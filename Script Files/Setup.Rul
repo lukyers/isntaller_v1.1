@@ -106,12 +106,8 @@ Dlg_SdConfig3:
 	if (nResult = BACK) then
 		goto Dlg_SdConfig2;
 	endif;
-	//MessageBox("c:\\logo.ps1", INFORMATION);
-	
-	//LaunchApp(WINSYSDIR64^"WindowsPowerShell\\v1.0\\", " & powershell -ExecutionPolicy Unrestricted -NoExit -NoProfile" + "c:\\logo.ps1");
-	//LaunchApp(WINSYSDIR64^"cmd.exe", " & powershell -ExecutionPolicy ByPass -File" + "C:\\logo.ps1");
-	
-Dlg_SdAskDestPath:    	
+
+Dlg_SdAskDestPath:
     nResult = SdAskDestPath(szTitle, szMsg, INSTALLDIR, 0);
     if (nResult = BACK) then
 		goto Dlg_SdConfig3;
@@ -152,8 +148,8 @@ begin
 	
 	SetConfig(pServ, pInsta, package);
 	
-		Disable(STATUSEX);
-
+	Disable(STATUSEX);
+/*
 	bOpt1   = FALSE;
     bOpt2   = FALSE;    
 
@@ -163,8 +159,8 @@ begin
 	    SdFinish ( szTitle , szMsg1 , szMsg2 , szOpt1 , szOpt2 , bOpt1 , bOpt2 );
 	endif;
 end;
-
-/*	Disable(STATUSEX);
+*/
+	Disable(STATUSEX);
 	
 	bOpt1   = TRUE;
     bOpt2   = TRUE;
@@ -173,8 +169,6 @@ end;
 	szOption2="";
 	SdFinishEx(szTitle, szMsg1, szMsg2, szOption1, szOption2, bOpt1, bOpt2);
 	if (bOpt1 = TRUE) then
-		//MessageBox(INSTALLDIR^"logo.ps1", INFORMATION);
-		//LaunchApp(WINSYSDIR64^"cmd.exe", " & powershell -ExecutionPolicy ByPass -File" + INSTALLDIR^"logo.ps1");
 		LAAW_SHELLEXECUTEVERB = "runas";
 		LaunchApp(INSTALLDIR^"Install.cmd", "");
 	endif;
@@ -182,23 +176,12 @@ end;
     if ( BATCH_INSTALL ) then
     	SdFinishReboot ( szTitle , szMsg1 , SYS_BOOTMACHINE , szMsg2 , 0 );
 	endif;
-end;*/
-/*
-    N_File = INSTALLDIR^"install.ps1";
-    
-	FileGrep(N_File, "$RemoteHost", svReturnLine, nvReturnLineNum, 0);
-	FileInsertLine(N_File, "$RemoteHost = " + '"' + szIP + '"', nvReturnLineNum, REPLACE);
+end;
 
-	FileGrep(N_File, "$username", svReturnLine, nvReturnLineNum, 0);
-	FileInsertLine(N_File, "$username = " + '"' + szName + '"', nvReturnLineNum, REPLACE);
-	
-	FileGrep(N_File, "$password", svReturnLine, nvReturnLineNum, 0);
-    FileInsertLine(N_File, "$password = " + '"' + szPsw + '"', nvReturnLineNum, REPLACE);
-*/
 function SetConfig(Host, Install, Package)
-	NUMBER count, iCount, nvReturnLineNum;
+	NUMBER count, iCount, nvReturnLineNum, lResult;
 	STRING N_File, svReturnLine;
-	STRING checkbox1, checkbox2, checkbox3;
+	STRING checklist, svFirst, svRet;
 begin
 	Host->svHost = svHost;
 	Host->svRepo = svRepo;
@@ -211,10 +194,6 @@ begin
 	Install->svPy = svPy;
 	Install->svPyPip = svPyPip;
 	Install->svWxPy = svWxPy;
-	
-	ListGetFirstString(lvPackage, checkbox1);
-	ListGetNextString(lvPackage, checkbox2);
-	ListGetNextString(lvPackage, checkbox3);
 	
     N_File = INSTALLDIR^"install.ps1";
     
@@ -240,23 +219,15 @@ begin
     FileGrep(N_File, "$FileWxPython", svReturnLine, nvReturnLineNum, 0);
     FileInsertLine(N_File, "$FileWxPython = " + '"' + Install->svWxPy + '"', nvReturnLineNum, REPLACE);	
 	
+	lResult = ListCount(lvPackage);
+	ListGetFirstString(lvPackage, svFirst);
+	checklist = '"' + svFirst + '"';
+	for iCount = 1 to lResult - 1
+		ListGetNextString(lvPackage, svRet);
+		checklist = checklist + ',' + '"' + svRet + '"';
+	endfor;
+	checklist = "$PythonPipPackages = @(" +  checklist + ')';
 	FileGrep(N_File, "$PythonPipPackages", svReturnLine, nvReturnLineNum, 0);
-    FileInsertLine(N_File, '"' + checkbox1  + '"' + ',', nvReturnLineNum + 1, REPLACE);	
-    FileInsertLine(N_File, '"' + checkbox2  + '"' + ',', nvReturnLineNum + 2, REPLACE);	
-    FileInsertLine(N_File, '"' + checkbox3  + '"', nvReturnLineNum + 3, REPLACE);
-    
-	/*
-	Package = ListCreate(STRINGLIST);
-	count = ListCount(lvPackage);
-	for iCount = 1 to count
-		ListGetNextString(lvPackage, sRet);
-		ListAddString(Package, sRet, AFTER);
-	endfor;
-	
-	count = ListCount(Package);
-	for iCount = 1 to count
-		ListGetNextString(Package, sRet);
-		MessageBox(sRet, INFORMATION);
-	endfor;
-	*/
+    FileInsertLine(N_File, checklist, nvReturnLineNum, REPLACE);	
+
 end;

@@ -17,9 +17,9 @@
 #define PYTHONPIP 1310
 #define WXPYTHON 1311
 
-#define ROBOTFW 1305
-#define ROBOTFW_S2L 1306
-#define ROBOTFW_RIDE 1307
+#define ROBOTFW 1335
+#define ROBOTFW_S2L 1336
+#define ROBOTFW_RIDE 1337
 
 #define B_BACK 12
 #define B_NEXT 1
@@ -49,8 +49,8 @@ begin
 		case DLG_INIT:
 			CtrlSetText(DLG_CONFIG1, REMOTEHOST, dfHost);
 			CtrlSetText(DLG_CONFIG1, REMOTESOFTREPO, dfRepo);
-			CtrlSetText(DLG_CONFIG1, USERNAME, dfUser);
-			CtrlSetText(DLG_CONFIG1, PASSWORD, dfPsw);
+			//CtrlSetText(DLG_CONFIG1, USERNAME, dfUser);
+			//CtrlSetText(DLG_CONFIG1, PASSWORD, dfPsw);
 		
 		case B_NEXT:
 			CtrlGetText(DLG_CONFIG1, REMOTEHOST, svHost);
@@ -182,7 +182,7 @@ begin
 			if (CtrlGetState(DLG_CONFIG3, ROBOTFW_S2L) = BUTTON_CHECKED) then
 				ListAddString(lvPackage, check2, AFTER);
 			endif;
-			if (CtrlGetState(DLG_CONFIG3, ROBOTFW_S2L) = BUTTON_CHECKED) then
+			if (CtrlGetState(DLG_CONFIG3, ROBOTFW_RIDE) = BUTTON_CHECKED) then
 				ListAddString(lvPackage, check3, AFTER);
 			endif;
 			nRerutn = 1;
@@ -208,17 +208,3 @@ begin
 	ReleaseDialog(DLG_CONFIG3);
 	return nRerutn;
 end;
-
-
-/*
-    N_File = INSTALLDIR^"install.ps1";
-    
-	FileGrep(N_File, "$RemoteHost", svReturnLine, nvReturnLineNum, 0);
-	FileInsertLine(N_File, "$RemoteHost = " + '"' + szIP + '"', nvReturnLineNum, REPLACE);
-
-	FileGrep(N_File, "$username", svReturnLine, nvReturnLineNum, 0);
-	FileInsertLine(N_File, "$username = " + '"' + szName + '"', nvReturnLineNum, REPLACE);
-	
-	FileGrep(N_File, "$password", svReturnLine, nvReturnLineNum, 0);
-    FileInsertLine(N_File, "$password = " + '"' + szPsw + '"', nvReturnLineNum, REPLACE);
-*/
