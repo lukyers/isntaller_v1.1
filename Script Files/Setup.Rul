@@ -170,12 +170,14 @@ end;
 	SdFinishEx(szTitle, szMsg1, szMsg2, szOption1, szOption2, bOpt1, bOpt2);
 	if (bOpt1 = TRUE) then
 		LAAW_SHELLEXECUTEVERB = "runas";
+		Disable(WOW64FSREDIRECTION); 
 		LaunchApp(INSTALLDIR^"Install.cmd", "");
 	endif;
 
     if ( BATCH_INSTALL ) then
     	SdFinishReboot ( szTitle , szMsg1 , SYS_BOOTMACHINE , szMsg2 , 0 );
 	endif;
+	Enable(WOW64FSREDIRECTION); 
 end;
 
 function SetConfig(Host, Install, Package)
